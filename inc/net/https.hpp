@@ -72,7 +72,7 @@ public:
     std::future<connection> accept_next();
     
 private:
-    class async_result : public std::enable_shared_from_this<connection::listener::async_result> {
+    class async_result : public std::enable_shared_from_this<async_result> {
     public:
         explicit async_result(boost::asio::ssl::context& ssl_ctx);
         void on_accept(boost::beast::error_code ec, boost::asio::ip::tcp::socket socket);
