@@ -19,22 +19,22 @@ class server;
 
 namespace http {
 
-typedef boost::beast::http::response<boost::beast::http::dynamic_body> response_t;
-typedef boost::beast::http::request<boost::beast::http::string_body> request_t;
+using response_t = boost::beast::http::response<boost::beast::http::dynamic_body>;
+using request_t = boost::beast::http::request<boost::beast::http::string_body>;
 
 class connection {
-    typedef boost::beast::tcp_stream stream_t;
+    using stream_t = boost::beast::tcp_stream;
 public:
     connection() = default;
     connection(boost::asio::io_context& io_ctx, const std::string& sni_hostname, boost::asio::ip::tcp::resolver::results_type resolve);
-    connection(boost::asio::ip::tcp::socket socket);
+    explicit connection(boost::asio::ip::tcp::socket socket);
     ~connection();
     connection(const connection&) = delete;
-    connection(connection&&);
+    connection(connection&&) noexcept ;
     connection& operator=(const connection&) = delete;
-    connection& operator=(connection&&);
+    connection& operator=(connection&&) noexcept ;
 
-    response_t send(const request_t& request);
+    http::response_t send(const request_t& request);
 
     void close();
 
@@ -52,7 +52,7 @@ private:
     class connector;
 
     std::unique_ptr<stream_t> stream_;
-    std::function<response_t(const request_t&)> on_request_;
+    std::function<http::response_t(const request_t&)> on_request_;
     std::promise<void> next_response_;
     request_t next_request_;
     boost::beast::flat_buffer buffer_;
@@ -67,7 +67,7 @@ public:
     void on_resolve(boost::beast::error_code ec, boost::asio::ip::tcp::resolver::results_type results);
     void on_connect(boost::beast::error_code ec, boost::asio::ip::tcp::resolver::results_type::endpoint_type endpoint);
 
-    std::promise<connection> result;
+    std::promise<connection> result; // NOLINT (cppcoreguidelines-non-private-member-variables-in-classes)
 };
 
 class connection::listener : public std::enable_shared_from_this<connection::listener> {

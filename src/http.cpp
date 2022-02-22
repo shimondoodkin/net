@@ -34,11 +34,11 @@ connection::~connection() {
     }
 }
 
-connection::connection(connection&& other): stream_{other.stream_.release()} {
+connection::connection(connection&& other) noexcept: stream_{other.stream_.release()} {
     
 }
 
-connection& connection::operator=(connection&& other) {
+connection& connection::operator=(connection&& other) noexcept {
     stream_.reset(other.stream_.release());
     return *this;
 }
@@ -47,13 +47,13 @@ connection::operator bool() const {
     return bool(stream_);
 }
 
-response_t connection::send(const request_t& request) {
+http::response_t connection::send(const request_t& request) {
     if (!stream_) {
         throw std::runtime_error("connection is closed");
     }
     boost::beast::http::write(*stream_, request);
     boost::beast::flat_buffer buffer;
-    response_t result;
+    http::response_t result;
     boost::beast::http::read(*stream_, buffer, result);
     return result;
 }
@@ -90,7 +90,7 @@ void connection::connector::on_resolve(boost::beast::error_code ec, boost::asio:
     } else {
         stream_.async_connect(
             results, 
-            boost::beast::bind_front_handler(&connector::on_connect, shared_from_this())
+            boost::beast::bind_front_handler(&connector::on_connect, this->shared_from_this())
         );
     }
 }
@@ -129,7 +129,7 @@ connection::listener::listener(boost::asio::io_context& io_ctx, const std::strin
 
 std::future<connection> connection::listener::accept_next() {
     connection_ = std::promise<connection>();
-    acceptor_.async_accept(boost::beast::bind_front_handler(&listener::on_accept, shared_from_this()));
+    acceptor_.async_accept(boost::beast::bind_front_handler(&listener::on_accept, this->shared_from_this()));
     return connection_.get_future();
 }
 

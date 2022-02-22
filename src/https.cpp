@@ -32,11 +32,11 @@ connection::~connection() {
     }
 }
 
-connection::connection(connection&& other): stream_{other.stream_.release()} {
+connection::connection(connection&& other) noexcept: stream_{other.stream_.release()} {
     
 }
 
-connection& connection::operator=(connection&& other) {
+connection& connection::operator=(connection&& other) noexcept{
     stream_.reset(other.stream_.release());
     return *this;
 }
@@ -45,13 +45,13 @@ connection::operator bool() const {
     return bool(stream_);
 }
 
-response_t connection::send(const request_t& request) {
+https::response_t connection::send(const request_t& request) {
     if (!stream_) {
         throw std::runtime_error("connection is closed");
     }
     boost::beast::http::write(*stream_, request);
     boost::beast::flat_buffer buffer;
-    response_t result;
+    https::response_t result;
     boost::beast::http::read(*stream_, buffer, result);
     return result;
 }
@@ -93,7 +93,7 @@ void connection::connector::on_resolve(boost::beast::error_code ec, boost::asio:
         }
         boost::beast::get_lowest_layer(stream_).async_connect(
             results, 
-            boost::beast::bind_front_handler(&connector::on_connect, shared_from_this())
+            boost::beast::bind_front_handler(&connector::on_connect, this->shared_from_this())
         );
     }
 }
@@ -104,7 +104,7 @@ void connection::connector::on_connect(boost::beast::error_code ec, boost::asio:
     } else {
         stream_.async_handshake(
             boost::asio::ssl::stream_base::client,
-            boost::beast::bind_front_handler(&connector::on_handshake, shared_from_this())
+            boost::beast::bind_front_handler(&connector::on_handshake, this->shared_from_this())
         );
     }
 }
@@ -160,7 +160,7 @@ void connection::listener::async_result::on_accept(boost::beast::error_code ec, 
         stream_ = std::make_unique<stream_t>(std::move(socket), ssl_ctx_);
         boost::asio::dispatch(
             stream_->get_executor(), 
-            boost::beast::bind_front_handler(&async_result::on_dispatch, shared_from_this())
+            boost::beast::bind_front_handler(&async_result::on_dispatch, this->shared_from_this())
         );
     }
 }
@@ -169,7 +169,7 @@ void connection::listener::async_result::on_dispatch() {
     boost::beast::get_lowest_layer(*stream_).expires_after(std::chrono::seconds(30));
     stream_->async_handshake(
         boost::asio::ssl::stream_base::server, 
-        boost::beast::bind_front_handler(&async_result::on_handshake, shared_from_this())
+        boost::beast::bind_front_handler(&async_result::on_handshake, this->shared_from_this())
     );
 }
 

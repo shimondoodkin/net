@@ -15,8 +15,8 @@ class server;
 
 namespace https {
 
-typedef boost::beast::http::response<boost::beast::http::dynamic_body> response_t;
-typedef boost::beast::http::request<boost::beast::http::string_body> request_t;
+using response_t = boost::beast::http::response<boost::beast::http::dynamic_body>;
+using request_t = boost::beast::http::request<boost::beast::http::string_body>;
 
 class connection {
 public:
@@ -24,11 +24,11 @@ public:
     connection(boost::asio::io_context& io_ctx, boost::asio::ssl::context& ssl_ctx, const std::string& sni_hostname, boost::asio::ip::tcp::resolver::results_type resolve);
     ~connection();
     connection(const connection&) = delete;
-    connection(connection&&);
+    connection(connection&&) noexcept ;
     connection& operator=(const connection&) = delete;
-    connection& operator=(connection&&);
+    connection& operator=(connection&&) noexcept;
 
-    response_t send(const request_t& request);
+    https::response_t send(const request_t& request);
 
     void close();
 
@@ -43,7 +43,7 @@ private:
     friend class net::client;
     friend class net::server;
 
-    typedef boost::beast::ssl_stream<boost::beast::tcp_stream> stream_t;
+    using stream_t = boost::beast::ssl_stream<boost::beast::tcp_stream>;
     class connector;
 
     std::unique_ptr<stream_t> stream_;
@@ -62,7 +62,7 @@ public:
     void on_ssl_handshake(boost::beast::error_code ec);
     void on_handshake(boost::beast::error_code ec);
 
-    std::promise<connection> result;
+    std::promise<connection> result; // NOLINT (cppcoreguidelines-non-private-member-variables-in-classes)
 };
 
 
@@ -72,14 +72,14 @@ public:
     std::future<connection> accept_next();
     
 private:
-    class async_result : public std::enable_shared_from_this<async_result> {
+    class async_result : public std::enable_shared_from_this<connection::listener::async_result> {
     public:
-        async_result(boost::asio::ssl::context& ssl_ctx);
+        explicit async_result(boost::asio::ssl::context& ssl_ctx);
         void on_accept(boost::beast::error_code ec, boost::asio::ip::tcp::socket socket);
         void on_dispatch();
         void on_handshake(boost::beast::error_code ec);
 
-        std::promise<connection> result;
+        std::promise<connection> result; // NOLINT (cppcoreguidelines-non-private-member-variables-in-classes)
     private:
         boost::asio::ssl::context& ssl_ctx_;
         std::unique_ptr<stream_t> stream_;

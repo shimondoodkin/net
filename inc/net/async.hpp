@@ -19,16 +19,16 @@
 namespace async {
 
 struct reader {
-    boost::beast::flat_buffer buffer;
-    std::promise<std::string> result;
+    boost::beast::flat_buffer buffer; // NOLINT (misc-non-private-member-variables-in-classes)
+    std::promise<std::string> result; // NOLINT (misc-non-private-member-variables-in-classes)
 
     void on_read(boost::beast::error_code ec, size_t bytes);
-};
+} __attribute__((aligned(128))); // NOLINT (cppcoreguidelines-avoid-magic-numbers)
 
 struct writer {
-    std::promise<void> result;
+    std::promise<void> result; // NOLINT (misc-non-private-member-variables-in-classes)
     void on_write(boost::beast::error_code ec, size_t bytes);
-};
+} __attribute__((aligned(32)));// NOLINT (cppcoreguidelines-avoid-magic-numbers)
 
 template <class StreamT, class RequestT, class ResponseT>
 class request_handler : public std::enable_shared_from_this<request_handler<StreamT, RequestT, ResponseT>> {
@@ -49,7 +49,7 @@ public:
     }
 
 private:
-    void on_read(boost::beast::error_code ec, size_t bytes) {
+    void on_read(boost::beast::error_code ec, size_t /*bytes*/) {
         if (ec) {
             result_.set_exception(std::make_exception_ptr(std::runtime_error(ec.message())));
         } else {
@@ -62,13 +62,13 @@ private:
         }
     }
 
-    void on_write(bool close, boost::beast::error_code ec, size_t bytes) {
+    void on_write(bool close, boost::beast::error_code ec, size_t /*bytes*/) {
         if (ec) {
             result_.set_exception(std::make_exception_ptr(std::runtime_error(ec.message())));
         } else {
             if (close) {
-                boost::beast::error_code ec;
-                boost::beast::get_lowest_layer(stream_).socket().shutdown(boost::asio::ip::tcp::socket::shutdown_send, ec);
+                boost::beast::error_code ec2;
+                boost::beast::get_lowest_layer(stream_).socket().shutdown(boost::asio::ip::tcp::socket::shutdown_send, ec2);
             }
             result_.set_value();
         }
