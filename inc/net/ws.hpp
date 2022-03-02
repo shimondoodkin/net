@@ -59,6 +59,7 @@ class connection::connector : public std::enable_shared_from_this<connection::co
     std::string host_, port_;
 public:
     connector(boost::asio::io_context& io_ctx, const std::string& host, const std::string& port);
+    std::string uri="/";
 
     void on_resolve(boost::beast::error_code ec, boost::asio::ip::tcp::resolver::results_type results);
     void on_connect(boost::beast::error_code ec, boost::asio::ip::tcp::resolver::results_type::endpoint_type endpoint);

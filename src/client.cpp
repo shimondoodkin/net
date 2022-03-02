@@ -144,6 +144,7 @@ https::connection client::https(const std::string& host, const std::string& port
 
 std::future<wss::connection> client::wss(const std::string& host, const std::string& port, const std::string& uri) {
     auto connector = std::make_shared<wss::connection::connector>(io_ctx_, ssl_ctx_, host, port);
+    connector->uri = uri;
 
     boost::asio::ip::tcp::resolver::results_type resolvedip;
     std::string key=host+":"+port;

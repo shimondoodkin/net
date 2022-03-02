@@ -113,7 +113,7 @@ void connection::connector::on_ssl_handshake(boost::beast::error_code ec) {
             req.set(boost::beast::http::field::user_agent, BOOST_BEAST_VERSION_STRING);
         }));
         stream_.async_handshake(
-            host_ + ":" + port_, "/", boost::beast::bind_front_handler(&connector::on_handshake, shared_from_this())
+            host_ + ":" + port_, this->uri, boost::beast::bind_front_handler(&connector::on_handshake, shared_from_this())
         );
     }
 }
