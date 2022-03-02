@@ -83,20 +83,20 @@ connection::connector::connector(boost::asio::io_context& io_ctx, boost::asio::s
 
 }
 
-void connection::connector::on_resolve(boost::beast::error_code ec, boost::asio::ip::tcp::resolver::results_type results) {
-    if (ec) {
-        result.set_exception(std::make_exception_ptr(std::runtime_error(ec.message())));
-    } else {
-        if (!SSL_set_tlsext_host_name(stream_.native_handle(), host_.c_str())) {
-            result.set_exception(std::make_exception_ptr(std::runtime_error("failed setting SNI host name")));
-            return;
-        }
-        boost::beast::get_lowest_layer(stream_).async_connect(
-            results, 
-            boost::beast::bind_front_handler(&connector::on_connect, this->shared_from_this())
-        );
-    }
-}
+// void connection::connector::on_resolve(boost::beast::error_code ec, boost::asio::ip::tcp::resolver::results_type results) {
+//     if (ec) {
+//         result.set_exception(std::make_exception_ptr(std::runtime_error(ec.message())));
+//     } else {
+//         if (!SSL_set_tlsext_host_name(stream_.native_handle(), host_.c_str())) {
+//             result.set_exception(std::make_exception_ptr(std::runtime_error("failed setting SNI host name")));
+//             return;
+//         }
+//         boost::beast::get_lowest_layer(stream_).async_connect(
+//             results, 
+//             boost::beast::bind_front_handler(&connector::on_connect, this->shared_from_this())
+//         );
+//     }
+// }
 
 void connection::connector::on_connect(boost::beast::error_code ec, boost::asio::ip::tcp::resolver::results_type::endpoint_type endpoint) {
     if (ec) {

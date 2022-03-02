@@ -57,7 +57,7 @@ class connection::connector : public std::enable_shared_from_this<connection::co
 public:
     connector(boost::asio::io_context& io_ctx, boost::asio::ssl::context& ssl_ctx, const std::string& host, const std::string& port);
 
-    void on_resolve(boost::beast::error_code ec, boost::asio::ip::tcp::resolver::results_type results);
+    // void on_resolve(boost::beast::error_code ec, boost::asio::ip::tcp::resolver::results_type results);
     void on_connect(boost::beast::error_code ec, boost::asio::ip::tcp::resolver::results_type::endpoint_type endpoint);
     void on_ssl_handshake(boost::beast::error_code ec);
     void on_handshake(boost::beast::error_code ec);
